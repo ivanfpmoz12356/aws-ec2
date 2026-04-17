@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        APP_HOST = 'http://100.53.2.252/'
+        APP_USER = 'ec2-user'
+        APP_DIR  = '/home/ec2-user/app'
+    }
+
     stages {
         stage('checkout') {
             steps {
@@ -23,7 +29,17 @@ pipeline {
 
         stage('deploy') {
             steps {
-                echo 'Deploy step cemo dodati nakon sto pripremimo drugu EC2 instancu.'
+                sh """
+                    ssh -o StrictHostKeyChecking=no ${APP_USER}@${APP_HOST} 'mkdir -p ${APP_DIR}'
+                    rsync -avz --delete ./ ${APP_USER}@${APP_HOST}:${APP_DIR}/
+                    ssh -o StrictHostKeyChecking=no ${APP_USER}@${APP_HOST} '
+                        cd ${APP_DIR} &&
+                        npm install &&
+                        pm2 delete aws-ec2 || true &&
+                        pm2 start app.js --name aws-ec2 &&
+                        pm2 save
+                    '
+                """
             }
         }
     }
