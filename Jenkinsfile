@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_HOST = 'http://100.53.2.252/'
+        APP_HOST = '100.53.2.252'
         APP_USER = 'ec2-user'
         APP_DIR  = '/home/ec2-user/app'
     }
